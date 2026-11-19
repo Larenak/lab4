@@ -10,9 +10,16 @@ internal static class CollectionTasks
     internal static void RunTask1()
     {
         Console.WriteLine("Списки вводятся по возрастанию.");
-        Console.WriteLine("Повторяющиеся числа допустимы.");
-        List<int> first = Input.ReadList("L1", true);
-        List<int> second = Input.ReadList("L2", true);
+        Console.WriteLine("Повторяющиеся элементы допустимы.");
+        List<string> first = Input.ReadList("L1", true);
+        List<string> second = Input.ReadList("L2", true);
+        MergeLists(first, second);
+        PrintCollection("Результат L1", first);
+    }
+
+    private static void MergeLists<T>(List<T> first,
+        List<T> second)
+    {
         var firstIndex = first.Count - 1;
         var secondIndex = second.Count - 1;
         var resultIndex = 0;
@@ -23,7 +30,8 @@ internal static class CollectionTasks
         while (secondIndex >= 0)
         {
             if (firstIndex >= 0
-                && first[firstIndex] > second[secondIndex])
+                && Comparer<T>.Default.Compare(
+                    first[firstIndex], second[secondIndex]) > 0)
             {
                 first[resultIndex] = first[firstIndex];
                 firstIndex--;
@@ -36,20 +44,28 @@ internal static class CollectionTasks
 
             resultIndex--;
         }
-
-        PrintCollection("Результат L1", first);
     }
 
     internal static void RunTask2()
     {
-        List<int> values = Input.ReadList("L", false);
-        var list = new LinkedList<int>(values);
-        LinkedListNode<int>? node = list.First?.Next;
+        List<string> values = Input.ReadList("L", false);
+        var count = CountEqualNeighbors(values);
+        PrintCollection("Список L", values);
+        Console.WriteLine(
+            "Учитываются элементы с двумя соседями.");
+        Console.WriteLine($"Количество: {count}");
+    }
+
+    private static int CountEqualNeighbors<T>(List<T> values)
+    {
+        var list = new LinkedList<T>(values);
+        LinkedListNode<T>? node = list.First?.Next;
         var count = 0;
 
         while (node != null && node.Next != null)
         {
-            if (node.Previous!.Value == node.Next.Value)
+            if (object.Equals(node.Previous!.Value,
+                node.Next.Value))
             {
                 count++;
             }
@@ -57,10 +73,7 @@ internal static class CollectionTasks
             node = node.Next;
         }
 
-        PrintCollection("Список L", list);
-        Console.WriteLine(
-            "Учитываются элементы с двумя соседями.");
-        Console.WriteLine($"Количество: {count}");
+        return count;
     }
 
     internal static void RunTask3()

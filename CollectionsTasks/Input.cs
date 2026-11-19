@@ -76,30 +76,77 @@ internal static class Input
         return true;
     }
 
-    internal static List<int> ReadList(string name, bool sorted)
+    internal static List<string> ReadList(string name, bool sorted)
+    {
+        return ReadList<string>(name, sorted);
+    }
+
+    internal static List<T> ReadList<T>(string name, bool sorted)
     {
         var count = ReadInt(
             $"Число элементов {name} (0–10000): ", 0, 10000);
-        var values = new List<int>(count);
+        var values = new List<T>(count);
         var index = 0;
-        var minimum = 0;
-        var value = 0;
+        var text = string.Empty;
+        T? value = default;
 
         for (index = 0; index < count; index++)
         {
-            minimum = int.MinValue;
+            text = ReadLine($"{name}[{index + 1}]: ");
 
-            if (sorted && index > 0)
+            if (!TryParseElement(text, out value)
+                || value is null)
             {
-                minimum = values[index - 1];
+                Console.WriteLine("Некорректный элемент.");
+                index--;
+                continue;
             }
 
-            value = ReadInt($"{name}[{index + 1}]: ",
-                minimum, int.MaxValue);
+            if (sorted && index > 0
+                && Comparer<T>.Default.Compare(
+                    value, values[index - 1]) < 0)
+            {
+                Console.WriteLine(
+                    "Элемент меньше предыдущего. Повторите ввод.");
+                index--;
+                continue;
+            }
+
             values.Add(value);
         }
 
         return values;
+    }
+
+    private static bool TryParseElement<T>(string text,
+        out T? value)
+    {
+        var number = 0;
+        var symbol = '\0';
+        value = default;
+
+        if (typeof(T) == typeof(int)
+            && int.TryParse(text, out number))
+        {
+            value = (T)(object)number;
+            return true;
+        }
+
+        if (typeof(T) == typeof(char)
+            && char.TryParse(text, out symbol))
+        {
+            value = (T)(object)symbol;
+            return true;
+        }
+
+        if (typeof(T) == typeof(string)
+            && !string.IsNullOrWhiteSpace(text))
+        {
+            value = (T)(object)text;
+            return true;
+        }
+
+        return false;
     }
 
     internal static string ReadText(string prompt)
